@@ -1,0 +1,24 @@
+# --- Secrets & Config ---
+.env
+.env.local
+*.env
+secrets.json
+
+# --- Python / UV ---
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.uv/
+uv.lock
+
+# --- Docker ---
+.docker/
+# (Note: we generally commit docker-compose.yml, but ignore data volumes)
+/data/
+
+# --- IDEs & OS ---
+.vscode/
+.idea/
+.DS_Store
+*.swp

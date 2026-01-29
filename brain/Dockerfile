@@ -7,14 +7,14 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV PYTHONUNBUFFERED=1
 
-# 1. Copy the workspace-level lock and project files
-COPY pyproject.toml uv.lock ./
+# 1. Copy the workspace-level project files
+COPY pyproject.toml ./
 
 # 2. Copy the specific service files (paths are relative to build context: root)
 COPY brain/pyproject.toml ./brain/
 
 # 3. Install only the brain package dependencies
-RUN uv sync --frozen --no-dev --package brain
+RUN uv sync --no-dev --package brain
 
 # 4. Copy the actual source code
 COPY brain/ ./brain/

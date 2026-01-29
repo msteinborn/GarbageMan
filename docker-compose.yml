@@ -3,22 +3,22 @@ services:
     build:
       context: .
       dockerfile: tools/Dockerfile
-    healthcheck:
-      # CMD-SHELL tells Docker to run this inside a /bin/sh shell
-      # We check the /health endpoint we'll create below
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8000/health || exit 1"]
-      interval: 2s     # Check every 2 seconds
-      timeout: 2s      # Give up after 2 seconds
-      retries: 10      # Try 10 times before failing
-      start_period: 2s # Wait 2s before starting checks
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health')"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
 
   brain:
-    build:
-      context: .
-      dockerfile: brain/Dockerfile
-    environment:
-      - TOOL_SERVER_URL=http://tools:8000
-    stdin_open: true
-    tty: true
+      build:
+        context: .
+        dockerfile: brain/Dockerfile
+      environment:
+        - GEMINI_API_KEY=${GEMINI_API_KEY}
+        - TOOL_SERVER_URL=http://tools:8000
+      stdin_open: true
+      tty: true
+     

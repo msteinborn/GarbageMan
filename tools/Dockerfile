@@ -1,17 +1,20 @@
 FROM ghcr.io/astral-sh/uv:python3.11-alpine
 
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 # Ensure we don't use the host's virtualenv
 ENV UV_PROJECT_ENVIRONMENT=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
 
 # Copy root config for the workspace
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml ./
 COPY tools/pyproject.toml ./tools/
 
 # Install dependencies for the tools package
-RUN uv sync --frozen --no-dev --package tools
+RUN uv sync --no-dev --package tools
 
 COPY tools/ ./tools/
 WORKDIR /app/tools
