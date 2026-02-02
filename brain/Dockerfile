@@ -19,6 +19,11 @@ RUN uv sync --no-dev --package brain
 # 4. Copy the actual source code
 COPY brain/ ./brain/
 
+# Expose web server port
+EXPOSE 8001
+
 # Move into the service directory to run
 WORKDIR /app/brain
-CMD ["uv", "run", "main.py"]
+
+# Start the web server instead of CLI
+CMD ["uv", "run", "ui/web_server.py"]

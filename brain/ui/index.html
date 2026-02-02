@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Agent Console</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Brain Agent Console</h1>
+            <p class="subtitle">Ross MBA Assistant</p>
+        </div>
+        
+        <div class="chat-container">
+            <div id="chatHistory" class="chat-history"></div>
+        </div>
+        
+        <div class="input-area">
+            <form id="chatForm" autocomplete="off">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Ask me anything..." 
+                        autocomplete="off"
+                        autofocus
+                    >
+                    <button type="submit">Send</button>
+                </div>
+            </form>
+            <button id="resetBtn" class="reset-btn">Reset Conversation</button>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

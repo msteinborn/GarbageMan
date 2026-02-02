@@ -16,9 +16,9 @@ services:
       build:
         context: .
         dockerfile: brain/Dockerfile
+      ports:
+        - "8001:8001"
       environment:
-        - GEMINI_API_KEY=${GEMINI_API_KEY}
+        - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
         - TOOL_SERVER_URL=http://tools:8000
-      stdin_open: true
-      tty: true
-     
+    
