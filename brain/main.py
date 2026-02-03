@@ -3,6 +3,7 @@ import sys
 import time
 import httpx
 import anthropic
+from rag_client import init_rag, lookup_business_context
 
 # 1. Setup Client
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -88,6 +89,10 @@ def process_tool_call(tool_name: str, tool_input: dict, tool_registry: dict) -> 
         return error
 
 def run_agent():
+    # Initialize RAG client for business context
+    print("Initializing RAG client...")
+    init_rag()
+    
     # Fetch tools from Tool Server
     tools = fetch_tools()
     
@@ -103,9 +108,12 @@ def run_agent():
             "input_schema": tool["input_schema"]
         }
         claude_tools.append(claude_tool)
+    
     # Initialize conversation with Claude
     messages = []
-    system_prompt = "You are a Ross MBA assistant. Use the available tools to assist with analysis and information."
+    system_prompt = """You are a Ross MBA assistant. Use the available tools to assist with analysis and information.
+
+When answering questions about business terms, concepts, or financial topics, reference the business context provided to give accurate and informed answers."""
     
     print("--- Claude Control Unit Active ---")
     print("Type 'exit' or 'quit' to stop\n")
@@ -118,9 +126,15 @@ def run_agent():
             if user_prompt.lower() in ["exit", "quit"]: 
                 break
 
+            # Enrich user prompt with business context if relevant
+            business_context = lookup_business_context(user_prompt, top_k=5)
+            enriched_prompt = user_prompt
+            if business_context:
+                enriched_prompt = f"{business_context}\n\nUser Query: {user_prompt}"
+
             messages.append({
                 "role": "user",
-                "content": user_prompt
+                "content": enriched_prompt
             })
 
             # Agentic loop with tool use

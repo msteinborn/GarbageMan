@@ -1,0 +1,11 @@
+[project]
+name = "rag-service"
+version = "0.1.0"
+description = "RAG service for business terms retrieval"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb>=0.4.0",
+    "sentence-transformers>=2.2.0",
+    "requests>=2.31.0",
+]

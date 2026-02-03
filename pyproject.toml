@@ -3,7 +3,7 @@ name = "starter-agent"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "httpx>=0.28.1",
 ]
@@ -12,4 +12,5 @@ dependencies = [
 members = [
     "brain",
     "tools",
+    "rag_service",
 ]

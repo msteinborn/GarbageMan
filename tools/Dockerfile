@@ -1,17 +1,21 @@
-FROM ghcr.io/astral-sh/uv:python3.11-alpine
+FROM python:3.11-slim
 
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Ensure we don't use the host's virtualenv
-ENV UV_PROJECT_ENVIRONMENT=/app/.venv
-ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
+
+# Install uv
+RUN pip install uv
 
 # Copy root config for the workspace
 COPY pyproject.toml ./
 COPY tools/pyproject.toml ./tools/
+COPY rag_service/pyproject.toml ./rag_service/
 
 # Install dependencies for the tools package
 RUN uv sync --no-dev --package tools

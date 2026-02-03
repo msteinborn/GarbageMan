@@ -1,23 +1,32 @@
-FROM ghcr.io/astral-sh/uv:python3.11-alpine
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Enable bytecode compilation and optimized linking
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
 ENV PYTHONUNBUFFERED=1
 
-# 1. Copy the workspace-level project files
+# Install uv
+RUN pip install uv
+
+# Copy workspace-level project files
 COPY pyproject.toml ./
 
-# 2. Copy the specific service files (paths are relative to build context: root)
+# Copy all workspace members' pyproject.toml files
 COPY brain/pyproject.toml ./brain/
+COPY rag_service/pyproject.toml ./rag_service/
 
-# 3. Install only the brain package dependencies
+# Install only the brain package dependencies
 RUN uv sync --no-dev --package brain
 
-# 4. Copy the actual source code
+# Copy the actual source code
 COPY brain/ ./brain/
+COPY rag_service/ ./rag_service/
 
 # Expose web server port
 EXPOSE 8001

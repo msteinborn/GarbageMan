@@ -17,6 +17,17 @@ uv.lock
 # (Note: we generally commit docker-compose.yml, but ignore data volumes)
 /data/
 
+# --- Vector Databases & ML Models ---
+# Chroma vector database
+**/chroma_data/
+chroma.sqlite3
+
+# Embeddings and model caches
+*.pkl
+*.model
+.cache/
+sentence_transformers/
+
 # --- IDEs & OS ---
 .vscode/
 .idea/

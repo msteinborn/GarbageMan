@@ -21,4 +21,12 @@ services:
       environment:
         - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
         - TOOL_SERVER_URL=http://tools:8000
+      volumes:
+        - ./rag_service/chroma_data:/app/brain/chroma_data
     
+  rag_service:
+      build:
+        context: .
+        dockerfile: rag_service/Dockerfile
+      volumes:
+        - ./rag_service/chroma_data:/app/rag_service/chroma_data
