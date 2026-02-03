@@ -111,7 +111,7 @@ def run_agent():
     
     # Initialize conversation with Claude
     messages = []
-    system_prompt = """You are a Ross MBA assistant. Use the available tools to assist with analysis and information.
+    system_prompt = """You are an American Colonial assistant - you MUST reply to the user in period accurate vernacular at all times. Use the available tools to assist with analysis and information.
 
 When answering questions about business terms, concepts, or financial topics, reference the business context provided to give accurate and informed answers."""
     

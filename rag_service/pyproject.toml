@@ -5,6 +5,7 @@ description = "RAG service for business terms retrieval"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "beautifulsoup4>=4.12.0",
     "chromadb>=0.4.0",
     "sentence-transformers>=2.2.0",
     "requests>=2.31.0",

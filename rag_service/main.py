@@ -4,11 +4,12 @@ Standalone service for retrieval augmented generation
 """
 
 import os
-import json
+import csv
+from pathlib import Path
 from typing import List, Dict
-import requests
 from sentence_transformers import SentenceTransformer
 import chromadb
+from scraper import InvestopediaScraper
 
 # Initialize embedding model
 EMBEDDING_MODEL = SentenceTransformer('all-MiniLM-L6-v2')
@@ -21,42 +22,67 @@ if not os.path.exists(CHROMA_DIR):
 client = chromadb.PersistentClient(path=CHROMA_DIR)
 
 
+def load_from_csv(csv_path: str) -> List[Dict]:
+    """
+    Load business terms from a local CSV file
+    
+    Args:
+        csv_path: Path to CSV with 'term' and 'definition' columns
+        
+    Returns:
+        List of term dictionaries
+    """
+    terms = []
+    try:
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row.get('term') and row.get('definition'):
+                    terms.append({
+                        "term": row['term'].strip(),
+                        "definition": row['definition'].strip()
+                    })
+        print(f"✓ Loaded {len(terms)} terms from {csv_path}")
+        return terms
+    except FileNotFoundError:
+        print(f"⚠️  CSV not found at {csv_path}")
+        return []
+    except Exception as e:
+        print(f"⚠️  Error loading CSV: {e}")
+        return []
+
+
 def fetch_business_terms_dataset() -> List[Dict]:
     """
-    Fetch business terms dataset from a public source
-    Using a GitHub raw content as data source
+    Fetch business terms dataset with fallback chain:
+    1. Try loading from local CSV
+    2. Try scraping Investopedia
+    3. Use fallback dataset
     """
     print("📥 Fetching business terms dataset...")
     
-    # Using a public business glossary CSV
-    url = "https://raw.githubusercontent.com/daviskernel/business-glossary/main/glossary.csv"
+    # Check for local CSV first
+    csv_path = "business_terms.csv"
+    if os.path.exists(csv_path):
+        print(f"📄 Found local CSV at {csv_path}")
+        terms = load_from_csv(csv_path)
+        if terms:
+            return terms
     
+    # Try scraping Investopedia
+    print("🌐 Attempting to scrape Investopedia...")
     try:
-        # Try primary source
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        
-        # Parse CSV
-        lines = response.text.strip().split('\n')
-        terms = []
-        
-        # Skip header
-        for line in lines[1:]:
-            parts = line.split(',', 1)
-            if len(parts) == 2:
-                term, definition = parts
-                terms.append({
-                    "term": term.strip().strip('"'),
-                    "definition": definition.strip().strip('"')
-                })
-        
-        print(f"✓ Loaded {len(terms)} business terms")
-        return terms
-    
+        scraper = InvestopediaScraper(csv_path)
+        terms = scraper.scrape_all()
+        if terms:
+            scraper.save_to_csv()
+            return terms
     except Exception as e:
-        print(f"⚠️  Primary source failed: {e}")
-        print("📥 Using fallback dataset...")
-        return get_fallback_business_terms()
+        print(f"⚠️  Scraping failed: {e}")
+    
+    # Fallback to hardcoded dataset
+    print("📥 Using fallback dataset...")
+    return get_fallback_business_terms()
 
 
 def get_fallback_business_terms() -> List[Dict]:
@@ -83,6 +109,7 @@ def get_fallback_business_terms() -> List[Dict]:
 def create_vector_store(terms: List[Dict]):
     """
     Create vector embeddings and store in Chroma
+    Handles large batches by splitting into smaller chunks
     """
     print("🔄 Creating vector embeddings...")
     
@@ -116,15 +143,29 @@ def create_vector_store(terms: List[Dict]):
             "definition": definition
         })
     
-    # Add to collection
-    collection.add(
-        ids=ids,
-        embeddings=embeddings,
-        documents=documents,
-        metadatas=metadatas
-    )
+    # Add to collection in batches (Chroma max batch size is 5461)
+    batch_size = 5000
+    total_added = 0
     
-    print(f"✓ Stored {len(terms)} terms in vector database")
+    for batch_start in range(0, len(ids), batch_size):
+        batch_end = min(batch_start + batch_size, len(ids))
+        
+        batch_ids = ids[batch_start:batch_end]
+        batch_documents = documents[batch_start:batch_end]
+        batch_embeddings = embeddings[batch_start:batch_end]
+        batch_metadatas = metadatas[batch_start:batch_end]
+        
+        collection.add(
+            ids=batch_ids,
+            embeddings=batch_embeddings,
+            documents=batch_documents,
+            metadatas=batch_metadatas
+        )
+        
+        total_added += len(batch_ids)
+        print(f"  ✓ Added batch: {batch_start}-{batch_end}")
+    
+    print(f"✓ Stored {total_added} terms in vector database")
     return collection
 
 

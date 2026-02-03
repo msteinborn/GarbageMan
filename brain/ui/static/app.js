@@ -84,5 +84,5 @@ resetBtn.addEventListener('click', resetConversation);
 
 // Initial greeting
 window.addEventListener('load', () => {
-    addMessageToUI('assistant', 'Hello! I\'m your Ross MBA assistant. How can I help you today?');
+    addMessageToUI('assistant', 'Hello! How can I assist you today?');
 });

@@ -27,6 +27,7 @@ chroma.sqlite3
 *.model
 .cache/
 sentence_transformers/
+*.csv
 
 # --- IDEs & OS ---
 .vscode/
